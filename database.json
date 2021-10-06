@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlserverprefix": {
+            "type": "string"
+        },
+        "username": {
+            "type": "string"
+        },
+        "password": {
+            "type": "securestring"
+        },
+        "sqldatabaseprefix": {
+            "type": "string"
+        }
+    },
+    "functions": [],
+    "variables": {
+        "sqlservername": "[concat(parameters('sqlserverprefix'),uniqueString(resourceGroup().id))]",
+        "sqldatabasename": "[concat(parameters('sqldatabaseprefix'),uniqueString(resourceGroup().id))]"
+    },
+    "resources": [
+        {
+            "name": "[variables('sqlservername')]",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2014-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "administratorLogin": "[parameters('username')]",
+                "administratorLoginPassword": "[parameters('password')]"
+            }
+        },
+        {
+        "name": "[concat(variables('sqlservername'), '/', variables('sqldatabasename'))]",
+        "type": "Microsoft.Sql/servers/databases",
+        "apiVersion": "2014-04-01",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('sqlservername'))]"
+        ],
+        "properties": {
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "edition": "Basic",
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "Basic"
+        }
+    }
+    ],
+    "outputs": {}
+}
